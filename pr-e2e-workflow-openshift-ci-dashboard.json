@@ -277,7 +277,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 32
       },
       "id": 4,
       "options": {
@@ -491,7 +491,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 16
       },
       "id": 2,
       "options": {
@@ -692,7 +692,7 @@
   },
   "timepicker": {},
   "timezone": "utc",
-  "title": "PRs Merged With vs Without Prow E2E and overrides",
+  "title": "PR Merge Quality and Prow E2E Compliance",
   "uid": "pr-e2e-workflow-rhdh",
   "version": 1
 }
