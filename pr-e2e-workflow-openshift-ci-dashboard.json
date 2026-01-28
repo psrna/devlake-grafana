@@ -18,201 +18,82 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 159,
   "links": [],
-  "preload": false,
-  "refresh": "",
-  "schemaVersion": 41,
-  "tags": [
-    "Data Source Dashboard",
-    "Stable Data Sources"
-  ],
-  "time": {
-    "from": "now-7d",
-    "to": "now"
-  },
-  "timepicker": {},
-  "timezone": "utc",
-  "title": "PRs Merged With vs Without Prow E2E",
-  "uid": "pr-e2e-workflow",
-  "version": 1,
-  "templating": {
-    "list": [
-      {
-        "name": "repo_id",
-        "type": "query",
-        "label": "Repo",
-        "datasource": "mysql",
-        "refresh": 1,
-        "definition": "select concat(name, '--', id) as text from repos where id like 'github%'",
-        "query": "select concat(name, '--', id) as text from repos where id like 'github%'",
-        "regex": "/^(?<text>.*)--(?<value>.*)$/",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "options": [],
-        "multi": true,
-        "includeAll": true
-      },
-      {
-        "name": "e2e_outcome",
-        "type": "custom",
-        "label": "E2E Outcome",
-        "hide": 2,
-        "options": [
-          {
-            "text": "Merged with E2E passing",
-            "value": "Merged with E2E passing"
-          },
-          {
-            "text": "Merged without E2E passing",
-            "value": "Merged without E2E passing"
-          }
-        ],
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "includeAll": true,
-        "allValue": ""
-      },
-      {
-        "name": "interval",
-        "type": "custom",
-        "label": "Time Interval",
-        "query": "Month : DAYOFMONTH, Week : WEEKDAY",
-        "current": {
-          "text": "DAYOFMONTH",
-          "value": "DAYOFMONTH"
-        },
-        "options": [
-          {
-            "selected": true,
-            "text": "Month",
-            "value": "DAYOFMONTH"
-          },
-          {
-            "selected": false,
-            "text": "Week",
-            "value": "WEEKDAY"
-          }
-        ],
-        "includeAll": false
-      },
-      {
-        "name": "base_ref",
-        "type": "query",
-        "label": "Merge Target Branch",
-        "datasource": "mysql",
-        "refresh": 1,
-        "definition": "select distinct base_ref from pull_requests where base_ref is not null and base_ref != '' order by base_ref",
-        "query": "select distinct base_ref from pull_requests where base_ref is not null and base_ref != '' order by base_ref",
-        "current": {
-          "text": "main",
-          "value": "main"
-        },
-        "options": [],
-        "multi": true,
-        "includeAll": true,
-        "allValue": ".*"
-      },
-      {
-        "name": "bot_accounts",
-        "type": "textbox",
-        "label": "Exclude Bot Accounts",
-        "description": "Comma-separated GitHub logins to exclude from PR author (leave blank for none).",
-        "current": {
-          "text": "",
-          "value": ""
-        }
-      },
-      {
-        "name": "bot_author_ids",
-        "type": "textbox",
-        "label": "Exclude Bot Author IDs",
-        "description": "Comma-separated author_id values to exclude (leave blank for none).",
-        "current": {
-          "text": "",
-          "value": ""
-        }
-      },
-      {
-        "name": "exclude_merged_by_ids",
-        "type": "textbox",
-        "label": "Exclude Merged By IDs",
-        "description": "Comma-separated merged_by_id values to exclude (leave blank for none).",
-        "current": {
-          "text": "",
-          "value": ""
-        }
-      },
-      {
-        "name": "e2e_pattern",
-        "type": "textbox",
-        "label": "E2E Job Name Contains",
-        "description": "Case-insensitive substring match on OpenShift CI job_name.",
-        "current": {
-          "text": "",
-          "value": ""
-        }
-      }
-    ]
-  },
   "panels": [
     {
-      "id": 3,
-      "title": "About This Dashboard",
-      "type": "text",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 6,
         "w": 24,
         "x": 0,
         "y": 0
       },
+      "id": 3,
       "options": {
-        "mode": "markdown",
-        "content": "## Purpose\nCompare merged PRs with and without a passing Prow E2E job for the selected repositories, time range, and merge target branches.\n\n## How it works\n- Collects merged PRs for the selected repos/branches/time range.\n- Matches PR commits to OpenShift CI jobs (`ci_test_jobs`) by commit SHA and repo/org.\n- Classifies outcomes: passing jobs -> **Merged with E2E passing**; no passing job -> **Merged without E2E passing**.\n- Exclusions by bot login/author id/merged-by id only affect the **Merged without E2E passing** bucket and table.\n\n## Filters\nRepo, merge target branch, E2E job name substring, and optional exclusions by bot login, author id, or merged-by id.\n\n## Drilldowns\nClick a bar to open the detailed PR table. Passing PRs include a Prow job link when available."
-      }
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## Purpose\nCompare merged PRs with and without a passing Prow E2E job, and track merged PRs that include `/override` comments for a selected check.\n\n## How it works\n- Collects merged PRs for the selected repos/branches/time range.\n- Matches PR commits to OpenShift CI jobs (`ci_test_jobs`) by commit SHA and repo/org.\n- Classifies outcomes: passing jobs -> **Merged with E2E passing**; no passing job -> **Merged without E2E passing**.\n- Exclusions by bot login/author id/merged-by id only affect the **Merged without E2E passing** bucket and table.\n- Separately counts merged PRs with `/override` comments matching **Override Check Contains**.\n\n## Filters\nRepo, merge target branch, E2E job name substring, Override Check Contains, and optional exclusions by bot login, author id, or merged-by id.\n\n## Drilldowns\nUse the tables at the bottom to review PRs by outcome and overridden checks. Passing PRs include a Prow job link when available.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.6.6",
+      "title": "About This Dashboard",
+      "type": "text"
     },
     {
-      "id": 1,
-      "title": "Merged PRs by E2E Outcome",
-      "type": "barchart",
       "datasource": "mysql",
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 6
-      },
-      "targets": [
-        {
-          "format": "table",
-          "rawQuery": true,
-          "refId": "A",
-          "datasource": "mysql",
-          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_commits AS (\n  SELECT DISTINCT pr.id AS pr_id, prc.commit_sha\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_commits prc\n    ON prc.pull_request_id = pr.id\n),\npr_e2e AS (\n  SELECT pc.pr_id,\n         MAX(CASE WHEN j.result = 'SUCCESS' THEN 1 ELSE 0 END) AS has_passing_e2e\n  FROM pr_commits pc\n  INNER JOIN merged_prs pr\n    ON pr.id = pc.pr_id\n  INNER JOIN lake.ci_test_jobs j\n    ON j.commit_sha = pc.commit_sha\n   AND j.job_type = 'prow'\n   AND j.organization = SUBSTRING_INDEX(pr.repo_name, '/', 1)\n   AND j.repository = SUBSTRING_INDEX(pr.repo_name, '/', -1)\n  WHERE LOWER(j.job_name) LIKE CONCAT('%', LOWER('$e2e_pattern'), '%')\n  GROUP BY pc.pr_id\n)\nSELECT\n  'Count' AS bucket,\n  SUM(CASE WHEN COALESCE(pe.has_passing_e2e, 0) = 1 THEN 1 ELSE 0 END) AS `Merged with E2E passing`,\n  SUM(CASE WHEN COALESCE(pe.has_passing_e2e, 0) = 0\n           AND ('$bot_accounts' = '' OR FIND_IN_SET(LOWER(pr.author_name), LOWER(REPLACE('$bot_accounts', ' ', ''))) = 0)\n           AND ('$bot_author_ids' = '' OR FIND_IN_SET(LOWER(pr.author_id), LOWER(REPLACE('$bot_author_ids', ' ', ''))) = 0)\n           AND ('$exclude_merged_by_ids' = '' OR FIND_IN_SET(LOWER(pr.merged_by_id), LOWER(REPLACE('$exclude_merged_by_ids', ' ', ''))) = 0)\n      THEN 1 ELSE 0 END) AS `Merged without E2E passing`\nFROM merged_prs pr\nLEFT JOIN pr_e2e pe\n  ON pe.pr_id = pr.id;"
-        }
-      ],
-      "options": {
-        "orientation": "horizontal",
-        "showValue": "always",
-        "stacking": "none",
-        "xTickLabelRotation": 0,
-        "xTickLabelMaxLength": 50
-      },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
               "title": "Drill down to PRs",
               "url": "/d/${__dashboard.uid}/${__dashboard.slug}?var-repo_id=${repo_id:queryparam}&var-base_ref=${base_ref:queryparam}&var-e2e_outcome=${__field.name}&from=${__from}&to=${__to}"
             }
-          ]
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
         },
         "overrides": [
           {
@@ -245,34 +126,287 @@
             ]
           }
         ]
-      }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 1,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelMaxLength": 50,
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "11.6.6",
+      "targets": [
+        {
+          "datasource": "mysql",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_commits AS (\n  SELECT DISTINCT pr.id AS pr_id, prc.commit_sha\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_commits prc\n    ON prc.pull_request_id = pr.id\n),\npr_e2e AS (\n  SELECT pc.pr_id,\n         MAX(CASE WHEN j.result = 'SUCCESS' THEN 1 ELSE 0 END) AS has_passing_e2e\n  FROM pr_commits pc\n  INNER JOIN merged_prs pr\n    ON pr.id = pc.pr_id\n  INNER JOIN lake.ci_test_jobs j\n    ON j.commit_sha = pc.commit_sha\n   AND j.job_type = 'prow'\n   AND j.organization = SUBSTRING_INDEX(pr.repo_name, '/', 1)\n   AND j.repository = SUBSTRING_INDEX(pr.repo_name, '/', -1)\n  WHERE LOWER(j.job_name) LIKE CONCAT('%', LOWER('$e2e_pattern'), '%')\n  GROUP BY pc.pr_id\n)\nSELECT\n  'Count' AS bucket,\n  SUM(CASE WHEN COALESCE(pe.has_passing_e2e, 0) = 1 THEN 1 ELSE 0 END) AS `Merged with E2E passing`,\n  SUM(CASE WHEN COALESCE(pe.has_passing_e2e, 0) = 0\n           AND ('$bot_accounts' = '' OR FIND_IN_SET(LOWER(pr.author_name), LOWER(REPLACE('$bot_accounts', ' ', ''))) = 0)\n           AND ('$bot_author_ids' = '' OR FIND_IN_SET(LOWER(pr.author_id), LOWER(REPLACE('$bot_author_ids', ' ', ''))) = 0)\n           AND ('$exclude_merged_by_ids' = '' OR FIND_IN_SET(LOWER(pr.merged_by_id), LOWER(REPLACE('$exclude_merged_by_ids', ' ', ''))) = 0)\n      THEN 1 ELSE 0 END) AS `Merged without E2E passing`\nFROM merged_prs pr\nLEFT JOIN pr_e2e pe\n  ON pe.pr_id = pr.id;",
+          "refId": "A"
+        }
+      ],
+      "title": "Merged PRs by E2E Outcome",
+      "type": "barchart"
     },
     {
-      "id": 2,
-      "title": "PRs: Merged with E2E passing",
-      "type": "table",
       "datasource": "mysql",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.6",
+      "targets": [
+        {
+          "datasource": "mysql",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_overrides AS (\n  SELECT DISTINCT pr.id AS pr_id\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_comments c\n    ON c.pull_request_id = pr.id\n  WHERE LOWER(c.body) LIKE '%/override%'\n    AND ('$override_check' = '' OR LOWER(c.body) LIKE CONCAT('%', LOWER('$override_check'), '%'))\n)\nSELECT COUNT(*) AS override_pr_count\nFROM merged_prs pr\nINNER JOIN pr_overrides po\n  ON po.pr_id = pr.id;",
+          "refId": "E"
+        }
+      ],
+      "title": "Merged PRs With /override Comment",
+      "type": "stat"
+    },
+    {
+      "datasource": "mysql",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pr_url"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open PR",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 12,
         "x": 0,
         "y": 16
       },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.6.6",
       "targets": [
         {
+          "datasource": "mysql",
           "format": "table",
           "rawQuery": true,
-          "refId": "B",
-          "datasource": "mysql",
-          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_commits AS (\n  SELECT DISTINCT pr.id AS pr_id, prc.commit_sha\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_commits prc\n    ON prc.pull_request_id = pr.id\n),\npr_e2e AS (\n  SELECT pc.pr_id,\n         MAX(CASE WHEN j.result = 'SUCCESS' THEN 1 ELSE 0 END) AS has_passing_e2e,\n         SUBSTRING_INDEX(GROUP_CONCAT(CASE WHEN j.result = 'SUCCESS' THEN j.view_url END ORDER BY j.finished_at DESC), ',', 1) AS prow_job_url\n  FROM pr_commits pc\n  INNER JOIN merged_prs pr\n    ON pr.id = pc.pr_id\n  INNER JOIN lake.ci_test_jobs j\n    ON j.commit_sha = pc.commit_sha\n   AND j.job_type = 'prow'\n   AND j.organization = SUBSTRING_INDEX(pr.repo_name, '/', 1)\n   AND j.repository = SUBSTRING_INDEX(pr.repo_name, '/', -1)\n  WHERE LOWER(j.job_name) LIKE CONCAT('%', LOWER('$e2e_pattern'), '%')\n  GROUP BY pc.pr_id\n),\npr_outcome AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pe.prow_job_url,\n         CASE\n           WHEN pe.has_passing_e2e = 1 THEN 'Merged with E2E passing'\n           ELSE 'Merged without E2E passing'\n         END AS e2e_outcome\n  FROM merged_prs pr\n  LEFT JOIN pr_e2e pe\n    ON pe.pr_id = pr.id\n)\nSELECT title, url AS pr_url, merged_date, e2e_outcome, prow_job_url\nFROM pr_outcome\nWHERE e2e_outcome = 'Merged with E2E passing'\nORDER BY merged_date DESC\nLIMIT 200;"
+          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_commits AS (\n  SELECT DISTINCT pr.id AS pr_id, prc.commit_sha\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_commits prc\n    ON prc.pull_request_id = pr.id\n),\npr_e2e AS (\n  SELECT pc.pr_id,\n         MAX(CASE WHEN j.result = 'SUCCESS' THEN 1 ELSE 0 END) AS has_passing_e2e\n  FROM pr_commits pc\n  INNER JOIN merged_prs pr\n    ON pr.id = pc.pr_id\n  INNER JOIN lake.ci_test_jobs j\n    ON j.commit_sha = pc.commit_sha\n   AND j.job_type = 'prow'\n   AND j.organization = SUBSTRING_INDEX(pr.repo_name, '/', 1)\n   AND j.repository = SUBSTRING_INDEX(pr.repo_name, '/', -1)\n  WHERE LOWER(j.job_name) LIKE CONCAT('%', LOWER('$e2e_pattern'), '%')\n  GROUP BY pc.pr_id\n),\npr_outcome AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id,\n         CASE\n           WHEN pe.has_passing_e2e = 1 THEN 'Merged with E2E passing'\n           ELSE 'Merged without E2E passing'\n         END AS e2e_outcome\n  FROM merged_prs pr\n  LEFT JOIN pr_e2e pe\n    ON pe.pr_id = pr.id\n)\nSELECT title, url AS pr_url, merged_date, e2e_outcome\nFROM pr_outcome\nWHERE e2e_outcome = 'Merged without E2E passing'\n  AND ('$bot_accounts' = '' OR FIND_IN_SET(LOWER(pr_outcome.author_name), LOWER(REPLACE('$bot_accounts', ' ', ''))) = 0)\n  AND ('$bot_author_ids' = '' OR FIND_IN_SET(LOWER(pr_outcome.author_id), LOWER(REPLACE('$bot_author_ids', ' ', ''))) = 0)\n  AND ('$exclude_merged_by_ids' = '' OR FIND_IN_SET(LOWER(pr_outcome.merged_by_id), LOWER(REPLACE('$exclude_merged_by_ids', ' ', ''))) = 0)\nORDER BY merged_date DESC\nLIMIT 200;",
+          "refId": "D"
         }
       ],
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm"
-      },
+      "title": "PRs: Merged without E2E passing",
+      "type": "table"
+    },
+    {
+      "datasource": "mysql",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pr_url"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open PR",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.6.6",
+      "targets": [
+        {
+          "datasource": "mysql",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_overrides AS (\n  SELECT DISTINCT pr.id AS pr_id\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_comments c\n    ON c.pull_request_id = pr.id\n  WHERE LOWER(c.body) LIKE '%/override%'\n    AND ('$override_check' = '' OR LOWER(c.body) LIKE CONCAT('%', LOWER('$override_check'), '%'))\n)\nSELECT pr.title, pr.url AS pr_url, pr.merged_date\nFROM merged_prs pr\nINNER JOIN pr_overrides po\n  ON po.pr_id = pr.id\nORDER BY pr.merged_date DESC\nLIMIT 200;",
+          "refId": "F"
+        }
+      ],
+      "title": "PRs: Merged with /override Comment",
+      "type": "table"
+    },
+    {
+      "datasource": "mysql",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -309,54 +443,207 @@
             ]
           }
         ]
-      }
-    },
-    {
-      "id": 4,
-      "title": "PRs: Merged without E2E passing",
-      "type": "table",
-      "datasource": "mysql",
+      },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 12,
         "x": 0,
         "y": 24
       },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.6.6",
       "targets": [
         {
+          "datasource": "mysql",
           "format": "table",
           "rawQuery": true,
-          "refId": "D",
-          "datasource": "mysql",
-          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_commits AS (\n  SELECT DISTINCT pr.id AS pr_id, prc.commit_sha\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_commits prc\n    ON prc.pull_request_id = pr.id\n),\npr_e2e AS (\n  SELECT pc.pr_id,\n         MAX(CASE WHEN j.result = 'SUCCESS' THEN 1 ELSE 0 END) AS has_passing_e2e\n  FROM pr_commits pc\n  INNER JOIN merged_prs pr\n    ON pr.id = pc.pr_id\n  INNER JOIN lake.ci_test_jobs j\n    ON j.commit_sha = pc.commit_sha\n   AND j.job_type = 'prow'\n   AND j.organization = SUBSTRING_INDEX(pr.repo_name, '/', 1)\n   AND j.repository = SUBSTRING_INDEX(pr.repo_name, '/', -1)\n  WHERE LOWER(j.job_name) LIKE CONCAT('%', LOWER('$e2e_pattern'), '%')\n  GROUP BY pc.pr_id\n),\npr_outcome AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id,\n         CASE\n           WHEN pe.has_passing_e2e = 1 THEN 'Merged with E2E passing'\n           ELSE 'Merged without E2E passing'\n         END AS e2e_outcome\n  FROM merged_prs pr\n  LEFT JOIN pr_e2e pe\n    ON pe.pr_id = pr.id\n)\nSELECT title, url AS pr_url, merged_date, e2e_outcome\nFROM pr_outcome\nWHERE e2e_outcome = 'Merged without E2E passing'\n  AND ('$bot_accounts' = '' OR FIND_IN_SET(LOWER(pr_outcome.author_name), LOWER(REPLACE('$bot_accounts', ' ', ''))) = 0)\n  AND ('$bot_author_ids' = '' OR FIND_IN_SET(LOWER(pr_outcome.author_id), LOWER(REPLACE('$bot_author_ids', ' ', ''))) = 0)\n  AND ('$exclude_merged_by_ids' = '' OR FIND_IN_SET(LOWER(pr_outcome.merged_by_id), LOWER(REPLACE('$exclude_merged_by_ids', ' ', ''))) = 0)\nORDER BY merged_date DESC\nLIMIT 200;"
+          "rawSql": "WITH merged_prs AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pr.author_name, pr.author_id, pr.merged_by_id, r.name AS repo_name\n  FROM lake.pull_requests pr\n  INNER JOIN lake.repos r\n    ON r.id = pr.base_repo_id\n  WHERE pr.merged_date IS NOT NULL\n    AND $__timeFilter(pr.merged_date)\n    AND pr.base_repo_id IN (${repo_id})\n    AND pr.base_ref REGEXP '${base_ref:regex}'\n),\npr_commits AS (\n  SELECT DISTINCT pr.id AS pr_id, prc.commit_sha\n  FROM merged_prs pr\n  INNER JOIN lake.pull_request_commits prc\n    ON prc.pull_request_id = pr.id\n),\npr_e2e AS (\n  SELECT pc.pr_id,\n         MAX(CASE WHEN j.result = 'SUCCESS' THEN 1 ELSE 0 END) AS has_passing_e2e,\n         SUBSTRING_INDEX(GROUP_CONCAT(CASE WHEN j.result = 'SUCCESS' THEN j.view_url END ORDER BY j.finished_at DESC), ',', 1) AS prow_job_url\n  FROM pr_commits pc\n  INNER JOIN merged_prs pr\n    ON pr.id = pc.pr_id\n  INNER JOIN lake.ci_test_jobs j\n    ON j.commit_sha = pc.commit_sha\n   AND j.job_type = 'prow'\n   AND j.organization = SUBSTRING_INDEX(pr.repo_name, '/', 1)\n   AND j.repository = SUBSTRING_INDEX(pr.repo_name, '/', -1)\n  WHERE LOWER(j.job_name) LIKE CONCAT('%', LOWER('$e2e_pattern'), '%')\n  GROUP BY pc.pr_id\n),\npr_outcome AS (\n  SELECT pr.id, pr.url, pr.title, pr.merged_date, pe.prow_job_url,\n         CASE\n           WHEN pe.has_passing_e2e = 1 THEN 'Merged with E2E passing'\n           ELSE 'Merged without E2E passing'\n         END AS e2e_outcome\n  FROM merged_prs pr\n  LEFT JOIN pr_e2e pe\n    ON pe.pr_id = pr.id\n)\nSELECT title, url AS pr_url, merged_date, e2e_outcome, prow_job_url\nFROM pr_outcome\nWHERE e2e_outcome = 'Merged with E2E passing'\nORDER BY merged_date DESC\nLIMIT 200;",
+          "refId": "B"
         }
       ],
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm"
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "pr_url"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open PR",
-                    "url": "${__value.raw}"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
+      "title": "PRs: Merged with E2E passing",
+      "type": "table"
     }
-  ]
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 41,
+  "tags": [
+    "Data Source Dashboard",
+    "Stable Data Sources"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": [
+            "redhat-developer/rhdh"
+          ],
+          "value": [
+            "github:GithubRepo:4:592513835"
+          ]
+        },
+        "datasource": "mysql",
+        "definition": "select concat(name, '--', id) as text from repos where id like 'github%'",
+        "includeAll": true,
+        "label": "Repo",
+        "multi": true,
+        "name": "repo_id",
+        "options": [],
+        "query": "select concat(name, '--', id) as text from repos where id like 'github%'",
+        "refresh": 1,
+        "regex": "/^(?<text>.*)--(?<value>.*)$/",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "hide": 2,
+        "includeAll": true,
+        "label": "E2E Outcome",
+        "name": "e2e_outcome",
+        "options": [],
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "DAYOFMONTH",
+          "value": "DAYOFMONTH"
+        },
+        "includeAll": false,
+        "label": "Time Interval",
+        "name": "interval",
+        "options": [
+          {
+            "selected": true,
+            "text": "Month",
+            "value": "DAYOFMONTH"
+          },
+          {
+            "selected": false,
+            "text": "Week",
+            "value": "WEEKDAY"
+          }
+        ],
+        "query": "Month : DAYOFMONTH, Week : WEEKDAY",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": [
+            "main"
+          ],
+          "value": [
+            "main"
+          ]
+        },
+        "datasource": "mysql",
+        "definition": "select distinct base_ref from pull_requests where base_ref is not null and base_ref != '' order by base_ref",
+        "includeAll": true,
+        "label": "Merge Target Branch",
+        "multi": true,
+        "name": "base_ref",
+        "options": [],
+        "query": "select distinct base_ref from pull_requests where base_ref is not null and base_ref != '' order by base_ref",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "description": "Comma-separated GitHub logins to exclude from PR author (leave blank for none).",
+        "label": "Exclude Bot Accounts",
+        "name": "bot_accounts",
+        "options": [],
+        "query": "",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "github:GithubAccount:4:0",
+          "value": "github:GithubAccount:4:0"
+        },
+        "description": "Comma-separated author_id values to exclude (leave blank for none).",
+        "label": "Exclude Bot Author IDs",
+        "name": "bot_author_ids",
+        "options": [
+          {
+            "selected": true,
+            "text": "github:GithubAccount:4:0",
+            "value": "github:GithubAccount:4:0"
+          }
+        ],
+        "query": "github:GithubAccount:4:0",
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "description": "Comma-separated merged_by_id values to exclude (leave blank for none).",
+        "label": "Exclude Merged By IDs",
+        "name": "exclude_merged_by_ids",
+        "options": [
+          {
+            "selected": true
+          }
+        ],
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "description": "Case-insensitive substring match on OpenShift CI job_name.",
+        "label": "E2E Job Name Contains",
+        "name": "e2e_pattern",
+        "options": [
+          {
+            "selected": true
+          }
+        ],
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "e2e-ocp-helm",
+          "value": "e2e-ocp-helm"
+        },
+        "description": "Case-insensitive substring for /override comments (leave blank for any override).",
+        "label": "Override Check Contains",
+        "name": "override_check",
+        "options": [
+          {
+            "selected": true,
+            "text": "e2e-ocp-helm",
+            "value": "e2e-ocp-helm"
+          }
+        ],
+        "query": "e2e-ocp-helm",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "PRs Merged With vs Without Prow E2E and overrides",
+  "uid": "pr-e2e-workflow-14",
+  "version": 1
 }
