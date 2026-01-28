@@ -302,6 +302,49 @@
           "refId": "D"
         }
       ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pr_url"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open PR",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "title": "PRs: Merged without E2E passing",
       "type": "table"
     },
@@ -594,15 +637,21 @@
         "type": "textbox"
       },
       {
-        "current": {},
+        "current": {
+          "text": "github:GithubAccount:4:0",
+          "value": "github:GithubAccount:4:0"
+        },
         "description": "Comma-separated merged_by_id values to exclude (leave blank for none).",
         "label": "Exclude Merged By IDs",
         "name": "exclude_merged_by_ids",
         "options": [
           {
-            "selected": true
+            "selected": true,
+            "text": "github:GithubAccount:4:0",
+            "value": "github:GithubAccount:4:0"
           }
         ],
+        "query": "github:GithubAccount:4:0",
         "type": "textbox"
       },
       {
@@ -644,6 +693,6 @@
   "timepicker": {},
   "timezone": "utc",
   "title": "PRs Merged With vs Without Prow E2E and overrides",
-  "uid": "pr-e2e-workflow-14",
+  "uid": "pr-e2e-workflow-rhdh",
   "version": 1
 }
