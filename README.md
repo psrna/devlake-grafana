@@ -5,7 +5,9 @@ quality against OpenShift CI (Prow) E2E jobs and override usage.
 
 ## Files
 
-- `pr-e2e-workflow-openshift-ci-dashboard.json`: Grafana dashboard export.
+- `pr-e2e-workflow-openshift-ci-dashboard.json`: Main Grafana dashboard export.
+- `merged-prs-openshift-ci-daily.json`: Focused dashboard for daily merged PRs vs
+  OpenShift CI success rate with drilldown table.
 
 ## Dashboard Overview
 
@@ -14,6 +16,12 @@ The dashboard:
 - Compares merged PRs with and without a passing Prow E2E job.
 - Counts merged PRs that include `/override` comments.
 - Provides drilldowns to view PRs by outcome and override usage.
+
+The daily drilldown dashboard:
+
+- Plots daily merged PRs and daily OpenShift CI success rate (excluding aborted).
+- Uses Job Name and Event Type filters for OpenShift CI jobs.
+- Provides a click-through table of PRs merged on a selected day.
 
 ## Data Sources
 
@@ -30,11 +38,15 @@ The dashboard:
 - `bot_accounts`: comma-separated GitHub logins to exclude
 - `bot_author_ids`: comma-separated author IDs to exclude
 - `exclude_merged_by_ids`: comma-separated merged-by IDs to exclude
+- `job_name`: OpenShift CI job name filter (multi-select, daily dashboard)
+- `event_type`: OpenShift CI event type filter (multi-select, daily dashboard)
+- `drill_day`: hidden day selector for drilldown table (daily dashboard)
 
 ## Importing into Grafana
 
 1. Open Grafana and go to **Dashboards → Import**.
-2. Upload `pr-e2e-workflow-openshift-ci-dashboard.json`.
+2. Upload `pr-e2e-workflow-openshift-ci-dashboard.json` or
+   `merged-prs-openshift-ci-daily.json`.
 3. Map the `mysql` datasource to your DevLake database.
 4. Save the dashboard.
 

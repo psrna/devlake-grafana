@@ -1,0 +1,411 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## Merged PRs and OpenShift CI Success Rate (Daily)\n\n**What it shows**\n- **Merged PRs (bars)**: daily count of merged PRs for the selected repos and base branches.\n- **Pipeline success rate (line)**: daily percent of OpenShift CI job runs that succeeded, computed as **SUCCESS / (SUCCESS + FAILURE)**.\n\n**How it is computed**\n- Both series are grouped by day and filtered by the dashboard time range.\n- Success rate excludes **ABORTED** jobs and is filtered by **Job Name** and **Event Type**.\n- The line uses the right axis (0–100%).\n\n**Drilldown**\n- Click a bar to see the list of PRs merged on that day in the table below.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.6.6",
+      "title": "About This Dashboard",
+      "type": "text"
+    },
+    {
+      "datasource": "mysql",
+      "description": "Daily merged PR volume and daily OpenShift CI success rate",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "merged_prs"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View merged PRs on day",
+                    "url": "/d/${__dashboard.uid}/${__dashboard.slug}?var-drill_day=${__value.time:date:YYYY-MM-DD}&from=${__from}&to=${__to}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 30
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pipeline_success_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.6",
+      "targets": [
+        {
+          "datasource": "mysql",
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(pr.merged_date, '1d') as time, COUNT(*) as merged_prs FROM lake.pull_requests pr WHERE pr.merged_date IS NOT NULL AND $__timeFilter(pr.merged_date) AND pr.base_repo_id IN (${repo_id}) AND pr.base_ref REGEXP '${base_ref:regex}' GROUP BY $__timeGroup(pr.merged_date, '1d') ORDER BY time",
+          "refId": "A",
+          "timeColumn": "merged_date",
+          "timeColumnType": "timestamp"
+        },
+        {
+          "datasource": "mysql",
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(j.finished_at, '1d') as time, ROUND(AVG(CASE WHEN j.result = 'SUCCESS' THEN 1 WHEN j.result = 'FAILURE' THEN 0 ELSE NULL END) * 100, 2) as pipeline_success_rate FROM lake.ci_test_jobs j INNER JOIN lake.repos r ON CONCAT(j.organization, '/', j.repository) = r.name WHERE $__timeFilter(j.finished_at) AND j.job_type = 'prow' AND j.result IN ('SUCCESS', 'FAILURE') AND r.id IN (${repo_id}) AND j.job_name IN (${job_name}) AND j.trigger_type IN (${event_type}) GROUP BY $__timeGroup(j.finished_at, '1d') ORDER BY time",
+          "refId": "B",
+          "timeColumn": "finished_at",
+          "timeColumnType": "timestamp"
+        }
+      ],
+      "title": "Merged PRs and OpenShift CI Success Rate (Daily)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "mysql",
+      "description": "Merged PRs for selected day",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pr_url"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open PR",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pr_number"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "merged_date"
+          }
+        ]
+      },
+      "pluginVersion": "11.6.6",
+      "targets": [
+        {
+          "datasource": "mysql",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONCAT('#', CAST(SUBSTRING_INDEX(pr.url, '/', -1) AS UNSIGNED)) as pr_number, pr.title, pr.url as pr_url, pr.merged_date FROM lake.pull_requests pr WHERE pr.merged_date IS NOT NULL AND pr.base_repo_id IN (${repo_id}) AND pr.base_ref REGEXP '${base_ref:regex}' AND (('$drill_day' = '' AND $__timeFilter(pr.merged_date)) OR ('$drill_day' != '' AND DATE(pr.merged_date) = STR_TO_DATE('$drill_day', '%Y-%m-%d'))) ORDER BY pr.merged_date DESC LIMIT 200",
+          "refId": "A"
+        }
+      ],
+      "title": "Merged PRs (Selected Day)",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 41,
+  "tags": [
+    "Data Source Dashboard",
+    "Stable Data Sources"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": [
+            "redhat-developer/rhdh"
+          ],
+          "value": [
+            "github:GithubRepo:4:592513835"
+          ]
+        },
+        "datasource": "mysql",
+        "definition": "select concat(name, '--', id) as text from repos where id like 'github%'",
+        "includeAll": true,
+        "label": "Repo",
+        "multi": true,
+        "name": "repo_id",
+        "options": [],
+        "query": "select concat(name, '--', id) as text from repos where id like 'github%'",
+        "refresh": 1,
+        "regex": "/^(?<text>.*)--(?<value>.*)$/",
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": [
+            "main"
+          ],
+          "value": [
+            "main"
+          ]
+        },
+        "datasource": "mysql",
+        "definition": "select distinct base_ref from pull_requests where base_ref is not null and base_ref != '' order by base_ref",
+        "includeAll": true,
+        "label": "Merge Target Branch",
+        "multi": true,
+        "name": "base_ref",
+        "options": [],
+        "query": "select distinct base_ref from pull_requests where base_ref is not null and base_ref != '' order by base_ref",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "hide": 2,
+        "label": "Drill Day",
+        "name": "drill_day",
+        "options": [],
+        "query": "",
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "datasource": "mysql",
+        "definition": "SELECT DISTINCT j.job_name FROM ci_test_jobs j INNER JOIN repos r ON CONCAT(j.organization, '/', j.repository) = r.name WHERE j.job_type = 'prow' AND j.job_name IS NOT NULL AND j.job_name != '' AND r.id IN (${repo_id}) ORDER BY j.job_name",
+        "includeAll": true,
+        "label": "Job Name",
+        "multi": true,
+        "name": "job_name",
+        "options": [],
+        "query": "SELECT DISTINCT j.job_name FROM ci_test_jobs j INNER JOIN repos r ON CONCAT(j.organization, '/', j.repository) = r.name WHERE j.job_type = 'prow' AND j.job_name IS NOT NULL AND j.job_name != '' AND r.id IN (${repo_id}) ORDER BY j.job_name",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": "mysql",
+        "definition": "SELECT DISTINCT j.trigger_type as event_type FROM ci_test_jobs j INNER JOIN repos r ON CONCAT(j.organization, '/', j.repository) = r.name WHERE j.job_type = 'prow' AND j.trigger_type IS NOT NULL AND j.trigger_type != '' AND r.id IN (${repo_id}) AND j.job_name IN (${job_name}) ORDER BY j.trigger_type",
+        "includeAll": true,
+        "label": "Event Type",
+        "multi": true,
+        "name": "event_type",
+        "options": [],
+        "query": "SELECT DISTINCT j.trigger_type as event_type FROM ci_test_jobs j INNER JOIN repos r ON CONCAT(j.organization, '/', j.repository) = r.name WHERE j.job_type = 'prow' AND j.trigger_type IS NOT NULL AND j.trigger_type != '' AND r.id IN (${repo_id}) AND j.job_name IN (${job_name}) ORDER BY j.trigger_type",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "Merged PRs and OpenShift CI Success Rate (Daily)",
+  "uid": "merged-prs-openshift-ci-daily",
+  "version": 1
+}
